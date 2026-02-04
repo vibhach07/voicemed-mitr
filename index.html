@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice-Med-Mitr Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        
+        .status.standby {
+            background-color: #e8f5e8;
+            color: #2d5a2d;
+            border: 1px solid #4caf50;
+        }
+        
+        .status.listening {
+            background-color: #e3f2fd;
+            color: #1565c0;
+            border: 1px solid #2196f3;
+        }
+        
+        .status.processing {
+            background-color: #fff3e0;
+            color: #e65100;
+            border: 1px solid #ff9800;
+        }
+        
+        .status.responding {
+            background-color: #f3e5f5;
+            color: #7b1fa2;
+            border: 1px solid #9c27b0;
+        }
+        
+        .status.error {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #f44336;
+        }
+        
+        .controls {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        button {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .wake-word-btn {
+            background-color: #2196f3;
+        }
+        
+        .wake-word-btn:hover {
+            background-color: #1976d2;
+        }
+        
+        .shutdown-btn {
+            background-color: #f44336;
+        }
+        
+        .shutdown-btn:hover {
+            background-color: #d32f2f;
+        }
+        
+        .conversation {
+            background-color: #fafafa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            margin: 20px 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        .message.user {
+            background-color: #e3f2fd;
+            text-align: right;
+        }
+        
+        .message.system {
+            background-color: #e8f5e8;
+        }
+        
+        .input-section {
+            margin: 20px 0;
+        }
+        
+        input[type="text"] {
+            width: 70%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .send-btn {
+            background-color: #ff9800;
+            width: 25%;
+            margin-left: 10px;
+        }
+        
+        .send-btn:hover {
+            background-color: #f57c00;
+        }
+        
+        .info {
+            background-color: #e1f5fe;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #0288d1;
+        }
+        
+        .accessibility-note {
+            background-color: #fff8e1;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #ffa000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 Voice-Med-Mitr Demo</h1>
+        
+        <div class="accessibility-note">
+            <strong>Accessibility Note:</strong> This is a voice-first application designed for visually impaired users. 
+            All interactions can be performed using voice commands. The visual interface is provided for development and testing purposes only.
+        </div>
+        
+        <div class="info">
+            <strong>How to use:</strong>
+            <ol>
+                <li>Click "Initialize System" to start the voice assistant</li>
+                <li>Say "Hey Mitr" or click "Simulate Wake Word" to begin a session</li>
+                <li>Describe your symptoms when prompted</li>
+                <li>Follow the voice guidance for health recommendations</li>
+            </ol>
+        </div>
+        
+        <div id="status" class="status standby">
+            Status: System Not Initialized
+        </div>
+        
+        <div class="controls">
+            <button id="initBtn" onclick="initializeSystem()">Initialize System</button>
+            <button id="wakeBtn" class="wake-word-btn" onclick="simulateWakeWord()" disabled>Simulate Wake Word</button>
+            <button id="shutdownBtn" class="shutdown-btn" onclick="shutdownSystem()" disabled>Shutdown System</button>
+        </div>
+        
+        <div class="input-section">
+            <input type="text" id="textInput" placeholder="Type your message here (for testing)" disabled>
+            <button class="send-btn" onclick="sendTextInput()" disabled id="sendBtn">Send Text</button>
+        </div>
+        
+        <div class="conversation" id="conversation">
+            <div class="message system">Welcome to Voice-Med-Mitr! Initialize the system to begin.</div>
+        </div>
+        
+        <div class="info">
+            <strong>Demo Features:</strong>
+            <ul>
+                <li>✅ Voice wake word detection simulation</li>
+                <li>✅ Text-to-speech output</li>
+                <li>✅ Symptom analysis and risk assessment</li>
+                <li>✅ Privacy-first design with automatic data deletion</li>
+                <li>✅ Medical safety guardrails</li>
+            </ul>
+        </div>
+    </div>
+
+    <script type="module">
+        import { VoiceAssistant } from '../core/VoiceAssistant.js';
+        
+        let voiceAssistant = null;
+        let isInitialized = false;
+        
+        // Make functions globally available
+        window.initializeSystem = initializeSystem;
+        window.simulateWakeWord = simulateWakeWord;
+        window.shutdownSystem = shutdownSystem;
+        window.sendTextInput = sendTextInput;
+        
+        async function initializeSystem() {
+            try {
+                updateStatus('Initializing...', 'processing');
+                addMessage('system', 'Initializing Voice-Med-Mitr system...');
+                
+                voiceAssistant = new VoiceAssistant();
+                await voiceAssistant.initialize();
+                
+                isInitialized = true;
+                updateStatus('System Ready - Say "Hey Mitr" to begin', 'standby');
+                addMessage('system', 'System initialized! Say "Hey Mitr" or click "Simulate Wake Word" to start a health consultation.');
+                
+                // Enable controls
+                document.getElementById('initBtn').disabled = true;
+                document.getElementById('wakeBtn').disabled = false;
+                document.getElementById('shutdownBtn').disabled = false;
+                document.getElementById('textInput').disabled = false;
+                document.getElementById('sendBtn').disabled = false;
+                
+                // Monitor state changes
+                monitorAssistantState();
+                
+            } catch (error) {
+                console.error('Failed to initialize:', error);
+                updateStatus('Initialization Failed', 'error');
+                addMessage('system', 'Failed to initialize system: ' + error.message);
+            }
+        }
+        
+        async function simulateWakeWord() {
+            if (!isInitialized || !voiceAssistant) {
+                addMessage('system', 'Please initialize the system first.');
+                return;
+            }
+            
+            try {
+                addMessage('user', '[Wake Word Detected: "Hey Mitr"]');
+                await voiceAssistant.simulateWakeWord();
+            } catch (error) {
+                console.error('Wake word simulation failed:', error);
+                addMessage('system', 'Wake word simulation failed: ' + error.message);
+            }
+        }
+        
+        async function shutdownSystem() {
+            if (!voiceAssistant) return;
+            
+            try {
+                updateStatus('Shutting down...', 'processing');
+                addMessage('system', 'Shutting down Voice-Med-Mitr...');
+                
+                await voiceAssistant.shutdown();
+                voiceAssistant = null;
+                isInitialized = false;
+                
+                updateStatus('System Shutdown', 'standby');
+                addMessage('system', 'System shutdown complete.');
+                
+                // Reset controls
+                document.getElementById('initBtn').disabled = false;
+                document.getElementById('wakeBtn').disabled = true;
+                document.getElementById('shutdownBtn').disabled = true;
+                document.getElementById('textInput').disabled = true;
+                document.getElementById('sendBtn').disabled = true;
+                
+            } catch (error) {
+                console.error('Shutdown failed:', error);
+                addMessage('system', 'Shutdown error: ' + error.message);
+            }
+        }
+        
+        async function sendTextInput() {
+            const input = document.getElementById('textInput');
+            const text = input.value.trim();
+            
+            if (!text || !isInitialized || !voiceAssistant) {
+                return;
+            }
+            
+            try {
+                addMessage('user', text);
+                input.value = '';
+                
+                // Check if we have an active session
+                if (voiceAssistant.isActive()) {
+                    await voiceAssistant.simulateUserInput(text);
+                } else {
+                    addMessage('system', 'No active session. Please say "Hey Mitr" first to start a consultation.');
+                }
+                
+            } catch (error) {
+                console.error('Text input failed:', error);
+                addMessage('system', 'Error processing input: ' + error.message);
+            }
+        }
+        
+        function updateStatus(message, type) {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = `Status: ${message}`;
+            statusEl.className = `status ${type}`;
+        }
+        
+        function addMessage(sender, content) {
+            const conversation = document.getElementById('conversation');
+            const messageEl = document.createElement('div');
+            messageEl.className = `message ${sender}`;
+            messageEl.textContent = content;
+            conversation.appendChild(messageEl);
+            conversation.scrollTop = conversation.scrollHeight;
+        }
+        
+        function monitorAssistantState() {
+            if (!voiceAssistant) return;
+            
+            setInterval(() => {
+                if (voiceAssistant) {
+                    const state = voiceAssistant.getCurrentState();
+                    const sessionId = voiceAssistant.getCurrentSessionId();
+                    
+                    let statusMessage = '';
+                    switch (state) {
+                        case 'standby':
+                            statusMessage = sessionId ? 'Session Active - Standby' : 'Ready - Say "Hey Mitr"';
+                            break;
+                        case 'listening':
+                            statusMessage = 'Listening for your response...';
+                            break;
+                        case 'processing':
+                            statusMessage = 'Processing your input...';
+                            break;
+                        case 'responding':
+                            statusMessage = 'Speaking response...';
+                            break;
+                        case 'error':
+                            statusMessage = 'Error occurred';
+                            break;
+                        default:
+                            statusMessage = 'Unknown state';
+                    }
+                    
+                    updateStatus(statusMessage, state);
+                }
+            }, 1000);
+        }
+        
+        // Handle Enter key in text input
+        document.getElementById('textInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendTextInput();
+            }
+        });
+        
+        // Add some example scenarios
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                addMessage('system', 'Example symptoms you can try: "I have a headache", "My stomach hurts", "I feel dizzy and nauseous", "I have chest pain"');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
